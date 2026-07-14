@@ -5,15 +5,15 @@ const ATTRS={none:{name:'無',icon:'○'},fire:{name:'火',icon:'🔥'},wood:{na
 const ADV={fire:'wood',wood:'earth',earth:'lightning',lightning:'water',water:'fire'};
 const ROLE_COLORS={tank:'#5ba5ff',special:'#ff735f',assassin:'#b47cff',archer:'#64dc96',knight:'#ffd065',ranger:'#4fd8e8',support:'#ff8bc2'};
 const UNITS={
- shield:{name:'盾兵',role:'タンク',roleKey:'tank',lane:'front',count:2,hp:210,atk:15,range:28,speed:16,rate:1.15,art:'shield'},
- golem:{name:'ゴーレム',role:'タンク',roleKey:'tank',lane:'front',count:1,hp:390,atk:29,range:31,speed:9,rate:1.7,art:'golem'},
- knight:{name:'ナイト',role:'ナイト',roleKey:'knight',lane:'mid',count:2,hp:145,atk:36,range:31,speed:26,rate:.95,art:'knight'},
- wolf:{name:'ウルフ',role:'ナイト',roleKey:'knight',lane:'mid',count:3,hp:78,atk:23,range:25,speed:46,rate:.72,art:'wolf'},
- assassin:{name:'アサシン',role:'アサシン',roleKey:'assassin',lane:'mid',count:1,hp:86,atk:68,range:25,speed:54,rate:1.05,art:'assassin',backline:true},
- archer:{name:'アーチャー',role:'アーチャー',roleKey:'archer',lane:'back',count:2,hp:70,atk:30,range:132,speed:17,rate:1.13,art:'archer',projectile:true},
- ranger:{name:'レンジャー',role:'レンジャー',roleKey:'ranger',lane:'back',count:2,hp:80,atk:23,range:112,speed:22,rate:.82,art:'ranger',projectile:true},
- priest:{name:'神官',role:'サポーター',roleKey:'support',lane:'back',count:1,hp:95,atk:9,range:105,speed:18,rate:1.65,art:'priest',heal:true},
- bomber:{name:'爆弾兵',role:'特攻',roleKey:'special',lane:'front',count:3,hp:44,atk:108,range:18,speed:62,rate:99,art:'bomber',bomb:true}
+ shield:{name:'盾兵',role:'タンク',roleKey:'tank',lane:'front',count:2,hp:210,atk:15,range:28,speed:32,rate:1.15,art:'shield'},
+ golem:{name:'ゴーレム',role:'タンク',roleKey:'tank',lane:'front',count:1,hp:390,atk:29,range:31,speed:18,rate:1.7,art:'golem'},
+ knight:{name:'ナイト',role:'ナイト',roleKey:'knight',lane:'mid',count:2,hp:145,atk:36,range:31,speed:52,rate:.95,art:'knight'},
+ wolf:{name:'ウルフ',role:'ナイト',roleKey:'knight',lane:'mid',count:3,hp:78,atk:23,range:25,speed:92,rate:.72,art:'wolf'},
+ assassin:{name:'アサシン',role:'アサシン',roleKey:'assassin',lane:'mid',count:1,hp:86,atk:68,range:25,speed:108,rate:1.05,art:'assassin',backline:true},
+ archer:{name:'アーチャー',role:'アーチャー',roleKey:'archer',lane:'back',count:2,hp:70,atk:30,range:132,speed:34,rate:1.13,art:'archer',projectile:true},
+ ranger:{name:'レンジャー',role:'レンジャー',roleKey:'ranger',lane:'back',count:2,hp:80,atk:23,range:112,speed:44,rate:.82,art:'ranger',projectile:true},
+ priest:{name:'神官',role:'サポーター',roleKey:'support',lane:'back',count:1,hp:95,atk:9,range:105,speed:36,rate:1.65,art:'priest',heal:true},
+ bomber:{name:'爆弾兵',role:'特攻',roleKey:'special',lane:'front',count:3,hp:44,atk:108,range:18,speed:124,rate:99,art:'bomber',bomb:true}
 };
 const unitCards=Object.keys(UNITS).map(id=>({id:'u_'+id,type:'unit',unit:id,name:UNITS[id].name,tag:UNITS[id].role,desc:`${UNITS[id].count}体召喚`,art:UNITS[id].art}));
 const buffs=[
@@ -22,7 +22,7 @@ const buffs=[
  {id:'b_spd',type:'buff',name:'迅速訓練',tag:'強化',desc:'攻撃間隔 -12%',stat:'rate',value:.12,art:'speed'},
  {id:'b_bomb',type:'buff',name:'大型火薬',tag:'特攻強化',desc:'爆発威力 +35%',stat:'bomb',value:.35,art:'bomb'}
 ];
-const attrCards=Object.keys(ATTRS).map(k=>({id:'a_'+k,type:'attr',attr:k,name:'属性カード（？）',tag:'属性（？）',desc:'ラウンド開始時に公開',art:'mysteryAttr'}));
+const attrCards=Object.keys(ATTRS).map(k=>({id:'a_'+k,type:'attr',attr:k,name:`${ATTRS[k].icon} ${ATTRS[k].name}属性`,tag:'属性',desc:'相手には戦闘開始まで非公開',art:'attribute'}));
 const rares=[
  {id:'r_life',type:'rare',name:'レアカード（？）',tag:'レア（？）',desc:'ラウンド開始時に開封',effect:'life',art:'mysteryRare'},
  {id:'r_swap',type:'rare',name:'レアカード（？）',tag:'レア（？）',desc:'ラウンド開始時に開封',effect:'swap',art:'mysteryRare'},
@@ -40,8 +40,9 @@ function nextDraft(){clearInterval(state.timer);state.phase='draft';state.pick=0
 function updateTimerRing(){const elapsed=30-state.timeLeft;const deg=Math.max(0,Math.min(360,elapsed/30*360));$('timerRing').style.setProperty('--p',deg+'deg')}
 function startTimer(){clearInterval(state.timer);state.timeLeft=30;$('timer').textContent='30';updateTimerRing();state.timer=setInterval(()=>{state.timeLeft--;$('timer').textContent=state.timeLeft;updateTimerRing();if(state.timeLeft<=0){clearInterval(state.timer);const cards=[...document.querySelectorAll('.card')];if(cards.length)cards[Math.floor(Math.random()*cards.length)].click();}},1000)}
 function renderOffers(os){const root=$('cards');root.innerHTML='';$('draftTitle').textContent=`カード選択 ${state.pick+1}/${state.picksNeeded}`;$('draftHelp').textContent='選ぶと戦場へ召喚・待機します';os.forEach(c=>{const b=document.createElement('button');b.className=`card ${c.type}`;b.innerHTML=`<span class="tag">${c.tag}</span><div class="card-art">${cardArtSvg(c)}</div><h3>${c.name}</h3><p>${c.desc}</p>`;b.onclick=()=>pick(c);root.appendChild(b)});}
-async function pick(c){if(state.phase!=='draft')return;clearInterval(state.timer);state.phase='summon';$('draftPanel').classList.add('summoning');await wait(220);$('draftPanel').classList.add('hidden');$('draftPanel').classList.remove('summoning');applyCard(state.you,c,'you');revealNpcStep();state.pick++;showBanner(c.type==='unit'?c.name+' 召喚！':c.name+' を戦場へ',900);await wait(4000);if(state.pick>=state.picksNeeded){$('rerollBtn').classList.add('hidden');beginRound();return}state.phase='draft';$('draftPanel').classList.remove('hidden');renderOffers(offers());startTimer();}
-function applyCard(p,c,side){if(c.type==='unit'){p.army.push(c.unit);summonUnitPreview(side,c.unit)}else if(c.type==='buff'){p.buff[c.stat]+=c.value;showBanner(`${side==='you'?'YOU':'NPC'}：${c.name}`,500)}else if(c.type==='attr'){p.pendingAttr.push(c.attr);summonHiddenToken(side,'attr')}else if(c.type==='rare'){p.rare.push(c.effect);summonHiddenToken(side,'rare')}}
+async function pick(c){if(state.phase!=='draft')return;clearInterval(state.timer);state.phase='summon';$('draftPanel').classList.add('summoning');await wait(220);$('draftPanel').classList.add('hidden');$('draftPanel').classList.remove('summoning');applyCard(state.you,c,'you');revealNpcStep();state.pick++;showBanner(c.type==='unit'?c.name+' 召喚！':c.name+' を戦場へ',900);await animateSceneFor(3000);if(state.pick>=state.picksNeeded){$('rerollBtn').classList.add('hidden');beginRound();return}state.phase='draft';$('draftPanel').classList.remove('hidden');renderOffers(offers());startTimer();drawScene();}
+function animateSceneFor(ms){return new Promise(resolve=>{const started=performance.now();function frame(now){drawScene();if(now-started<ms)requestAnimationFrame(frame);else resolve()}requestAnimationFrame(frame)})}
+function applyCard(p,c,side){if(c.type==='unit'){p.army.push(c.unit);summonUnitPreview(side,c.unit)}else if(c.type==='buff'){p.buff[c.stat]+=c.value;showBanner(`${side==='you'?'YOU':'NPC'}：${c.name}`,500)}else if(c.type==='attr'){p.pendingAttr.push(c.attr);summonHiddenToken(side,'attr',c.attr)}else if(c.type==='rare'){p.rare.push(c.effect);summonHiddenToken(side,'rare')}}
 function revealNpcStep(){const c=state.npcPlan[state.npcRevealIndex++];if(c)applyCard(state.npc,c,'npc')}
 function chooseNpc(os){return [...os].sort((a,b)=>scoreNpc(b)-scoreNpc(a))[0]}
 function scoreNpc(c){if(c.type==='rare')return 85;if(c.type==='unit'){let s=52;if(state.npc.army.length<3)s+=22;if(['shield','golem'].includes(c.unit))s+=8;if(c.unit==='bomber')s+=6;return s+Math.random()*10}if(c.type==='buff')return state.npc.army.length?57+Math.random()*12:13;if(c.type==='attr')return 40+Math.random()*17;return 20}
@@ -49,20 +50,27 @@ $('rerollBtn').onclick=()=>{if(state.rerolled)return;state.rerolled=true;$('rero
 function rebuildPreview(){state.previewUnits=[];for(const side of ['npc','you'])for(const id of state[side].army)addPreviewUnits(side,id,false);}
 function summonUnitPreview(side,id){addPreviewUnits(side,id,true)}
 function addPreviewUnits(side,id,animate){const t=UNITS[id],existing=state.previewUnits.filter(u=>u.side===side&&u.lane===t.lane).length;for(let i=0;i<t.count;i++){const idx=existing+i,pos=previewPosition(side,t.lane,idx);const u={side,type:id,lane:t.lane,x:pos.x,y:pos.y,scale:animate?0.05:1,alpha:animate?0:1,bounce:0};state.previewUnits.push(u);if(animate)state.summonFx.push({unit:u,t:0})}}
-function summonHiddenToken(side,kind){const y=side==='you'?575:65,x=kind==='attr'?65:355;state.summonFx.push({token:true,side,kind,x,y,t:0})}
-function previewPosition(side,lane,index){const laneY=side==='you'?{front:455,mid:515,back:570}:{front:185,mid:125,back:70};const cols=6;return {x:50+(index%cols)*64+(Math.floor(index/cols)%2)*16,y:laneY[lane]+Math.floor(index/cols)*(side==='you'?25:-25)}}
+function summonHiddenToken(side,kind,attr=null){const y=side==='you'?575:65,x=kind==='attr'?65:355;state.summonFx.push({token:true,side,kind,attr,x,y,t:0})}
+function previewPosition(side,lane,index){
+ const laneY=side==='you'?{front:455,mid:515,back:570}:{front:185,mid:125,back:70};
+ const row=Math.floor(index/9),slot=index%9;
+ const offsets=[0,-34,34,-68,68,-102,102,-136,136];
+ return {x:210+offsets[slot]+(row%2?17:0),y:laneY[lane]+row*(side==='you'?22:-22)}
+}
 async function beginRound(){clearInterval(state.timer);$('draftPanel').classList.add('hidden');state.phase='reveal';$('phase').textContent='開封';await revealPending('npc');await revealPending('you');$('phase').textContent='属性公開';updateHud(false);showBanner(`${ATTRS[state.npc.attr].icon} NPC　VS　YOU ${ATTRS[state.you.attr].icon}`,900);await wait(1000);startBattle();}
 async function revealPending(side){const p=state[side];while(p.pendingAttr.length){const attr=p.pendingAttr.shift();await revealCard('attribute','属性カード開封',`${side==='you'?'YOU':'NPC'}：${ATTRS[attr].icon} ${ATTRS[attr].name}属性`);p.attr=attr;updateHud(true)}while(p.rare.length){const effect=p.rare.shift();let text='';if(effect==='life'){p.life++;text=`${side==='you'?'YOU':'NPC'}：ライフ +1`;updateHud(true)}else if(effect==='swap'){const other=side==='you'?'npc':'you';if(p.army.length&&state[other].army.length){const a=Math.floor(Math.random()*p.army.length),b=Math.floor(Math.random()*state[other].army.length);[p.army[a],state[other].army[b]]=[state[other].army[b],p.army[a]];text='両軍のユニットが1体入れ替わった';rebuildPreview()}else text='入れ替えるユニットがいなかった'}else text='……何も起こらなかった';await revealCard('rare','レアカード開封',text)}}
 async function revealCard(kind,title,result){$('revealCard').className='reveal-card '+(kind==='attribute'?'attribute':'');$('revealSeal').textContent='?';$('revealTitle').textContent=title;$('revealResult').textContent='';$('revealOverlay').classList.remove('hidden');await wait(480);$('revealSeal').textContent=kind==='attribute'?'✦':'★';$('revealResult').textContent=result;await wait(1000);$('revealOverlay').classList.add('hidden')}
 function startBattle(){state.phase='battle';$('phase').textContent='戦闘';state.battle={units:[...makeFighters('npc'),...makeFighters('you')],projectiles:[],effects:[],last:performance.now(),done:false,lastDamageSide:null};requestAnimationFrame(loop)}
-function makeFighters(side){const p=state[side],arr=[],laneCount={front:0,mid:0,back:0};for(const id of p.army){const t=UNITS[id];for(let i=0;i<t.count;i++){const idx=laneCount[t.lane]++,pos=previewPosition(side,t.lane,idx);arr.push({side,type:id,lane:t.lane,x:pos.x,y:pos.y,vx:0,vy:0,hp:t.hp*(1+p.buff.hp),maxHp:t.hp*(1+p.buff.hp),atk:t.atk*(1+p.buff.atk),range:t.range,speed:t.speed,rate:Math.max(.32,t.rate*(1-p.buff.rate)),cool:Math.random()*.5,alive:true,target:null,backline:t.backline,heal:t.heal,bomb:t.bomb,bombMult:1+p.buff.bomb,anim:Math.random()*6.28,hit:0,attack:0,moving:false,radius:10,walkPhase:Math.random()*6.28})}}return arr}
+function makeFighters(side){const p=state[side],arr=[],laneCount={front:0,mid:0,back:0};for(const id of p.army){const t=UNITS[id];for(let i=0;i<t.count;i++){const idx=laneCount[t.lane]++,pos=previewPosition(side,t.lane,idx);arr.push({side,type:id,lane:t.lane,x:pos.x,y:pos.y,vx:0,vy:0,hp:t.hp*(1+p.buff.hp),maxHp:t.hp*(1+p.buff.hp),atk:t.atk*(1+p.buff.atk),range:t.range,speed:t.speed,rate:Math.max(.32,t.rate*(1-p.buff.rate)),cool:Math.random()*.5,alive:true,target:null,backline:t.backline,heal:t.heal,bomb:t.bomb,bombMult:1+p.buff.bomb,anim:Math.random()*6.28,hit:0,attack:0,moving:false,radius:5.5,walkPhase:Math.random()*6.28})}}return arr}
 function loop(now){if(!state.battle||state.battle.done)return;const dt=Math.min(.034,(now-state.battle.last)/1000);state.battle.last=now;updateBattle(dt);drawScene();if(!state.battle.done)requestAnimationFrame(loop)}
 function attrMult(a,b){if(ADV[a]===b)return 1.25;if(ADV[b]===a)return .8;return 1}
 function nearest(u,foes){let list=foes;if(u.backline){const back=foes.filter(f=>f.lane==='back');if(back.length)list=back}let best=null,dist=1e9;for(const e of list){const d=Math.hypot(e.x-u.x,e.y-u.y);if(d<dist){dist=d;best=e}}return best}
 function damage(att,target,amount){target.hp-=amount*attrMult(state[att.side].attr,state[target.side].attr);target.hit=.14;state.battle.lastDamageSide=att.side;if(target.hp<=0){target.alive=false;state.battle.effects.push({kind:'poof',x:target.x,y:target.y,t:0});if(target.bomb)explode(target)}}
 function explode(u){state.battle.effects.push({kind:'boom',x:u.x,y:u.y,t:0});for(const e of state.battle.units.filter(v=>v.alive&&v.side!==u.side&&Math.hypot(v.x-u.x,v.y-u.y)<92))damage(u,e,u.atk*u.bombMult)}
 function updateBattle(dt){const units=state.battle.units;for(const u of units){if(!u.alive)continue;u.cool-=dt;u.hit=Math.max(0,u.hit-dt);u.attack=Math.max(0,u.attack-dt);u.anim+=dt*5;const foes=units.filter(v=>v.alive&&v.side!==u.side);if(!foes.length){finishBattle(u.side);return}if(u.heal&&u.cool<=0){const allies=units.filter(v=>v.alive&&v.side===u.side&&v.hp<v.maxHp);if(allies.length){const a=allies.sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0];a.hp=Math.min(a.maxHp,a.hp+24);state.battle.effects.push({kind:'heal',x:a.x,y:a.y,t:0});u.cool=u.rate;u.attack=.25;continue}}
- if(!u.target||!u.target.alive)u.target=nearest(u,foes);const t=u.target;if(!t)continue;const dx=t.x-u.x,dy=t.y-u.y,d=Math.hypot(dx,dy)||1;if(d<=u.range){u.moving=false;u.vx*=.55;u.vy*=.55;if(u.cool<=0){u.attack=.22;if(u.bomb){u.alive=false;explode(u)}else if(UNITS[u.type].projectile){state.battle.projectiles.push({side:u.side,x:u.x,y:u.y,target:t,damage:u.atk,t:0});}else damage(u,t,u.atk);u.cool=u.rate}}else{u.moving=true;u.walkPhase+=dt*(4+u.speed/12);let desired=u.speed;if(u.lane==='back'&&d<72)desired=-u.speed*.75;const tx=dx/d*desired,ty=dy/d*desired;u.vx+=(tx-u.vx)*Math.min(1,dt*8);u.vy+=(ty-u.vy)*Math.min(1,dt*8);u.x+=u.vx*dt;u.y+=u.vy*dt;u.x=Math.max(22,Math.min(398,u.x));u.y=Math.max(30,Math.min(610,u.y))}}
+ if(!u.target||!u.target.alive)u.target=nearest(u,foes);const t=u.target;if(!t)continue;const dx=t.x-u.x,dy=t.y-u.y,d=Math.hypot(dx,dy)||1;const engage=u.range+u.radius+t.radius;
+ if(d<=engage){u.moving=false;u.vx=0;u.vy=0;if(u.cool<=0){u.attack=.22;if(u.bomb){u.alive=false;explode(u)}else if(UNITS[u.type].projectile){state.battle.projectiles.push({side:u.side,x:u.x,y:u.y,target:t,damage:u.atk,t:0});}else damage(u,t,u.atk);u.cool=u.rate}}
+ else{u.moving=true;u.walkPhase+=dt*(5+u.speed/20);let desired=u.speed;if(u.lane==='back'&&d<88)desired=-u.speed*.72;const tx=dx/d*desired,ty=dy/d*desired;u.vx+=(tx-u.vx)*Math.min(1,dt*10);u.vy+=(ty-u.vy)*Math.min(1,dt*10);u.x+=u.vx*dt;u.y+=u.vy*dt;u.x=Math.max(22,Math.min(398,u.x));u.y=Math.max(30,Math.min(610,u.y))}}
  separateUnits(units);
  for(const p of state.battle.projectiles){if(!p.target.alive){p.dead=true;continue}p.t+=dt*5;const dx=p.target.x-p.x,dy=p.target.y-p.y,d=Math.hypot(dx,dy)||1;p.x+=dx/d*170*dt;p.y+=dy/d*170*dt;if(d<12){const fake={side:p.side};damage(fake,p.target,p.damage);p.dead=true}}
  state.battle.projectiles=state.battle.projectiles.filter(p=>!p.dead);for(const e of state.battle.effects)e.t+=dt;state.battle.effects=state.battle.effects.filter(e=>e.t<.75)}
@@ -71,8 +79,8 @@ function separateUnits(units){
  const alive=units.filter(u=>u.alive);
  for(let i=0;i<alive.length;i++)for(let j=i+1;j<alive.length;j++){
   const a=alive[i],b=alive[j]; if(a.side!==b.side) continue;
-  const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||.001,min=(a.radius+b.radius)*.78;
-  if(d<min){const push=(min-d)*.5,nx=dx/d,ny=dy/d;a.x-=nx*push;a.y-=ny*push;b.x+=nx*push;b.y+=ny*push;}
+  const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||.001,min=(a.radius+b.radius)*.58;
+  if(d<min){const push=(min-d)*.22,nx=dx/d,ny=dy/d;a.x-=nx*push;a.y-=ny*push;b.x+=nx*push;b.y+=ny*push;}
  }
 }
 
@@ -80,13 +88,14 @@ function finishBattle(winner){if(state.battle.done)return;state.battle.done=true
 function drawScene(){drawField();if(state.phase==='battle'&&state.battle)drawBattleUnits();else drawPreviewUnits();drawTokens();drawFx()}
 function drawField(){ctx.clearRect(0,0,420,640);const g=ctx.createLinearGradient(0,0,0,640);g.addColorStop(0,'#72b95d');g.addColorStop(.48,'#8fd06d');g.addColorStop(1,'#69ad53');ctx.fillStyle=g;ctx.fillRect(0,0,420,640);ctx.fillStyle='#96d779';ctx.fillRect(0,274,420,92);ctx.fillStyle='#ffffff18';ctx.fillRect(0,316,420,4);ctx.strokeStyle='#4d913f55';ctx.lineWidth=1;for(let y=36;y<640;y+=42){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(420,y);ctx.stroke()}for(let x=24;x<420;x+=52){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,640);ctx.stroke()}drawScenery()}
 function drawScenery(){const spots=[[25,95,'tree'],[390,130,'tree'],[28,520,'rock'],[387,555,'tree'],[70,300,'flower'],[350,330,'flower'],[185,35,'rock'],[240,603,'flower']];for(const [x,y,k] of spots){if(k==='tree'){ctx.fillStyle='#60442e';ctx.fillRect(x-3,y,6,14);ctx.fillStyle='#3c8f46';ctx.beginPath();ctx.arc(x,y-3,13,0,6.28);ctx.fill()}else if(k==='rock'){ctx.fillStyle='#71806f';ctx.beginPath();ctx.ellipse(x,y,10,6,-.2,0,6.28);ctx.fill()}else{ctx.fillStyle='#fff59b';for(let a=0;a<5;a++){ctx.beginPath();ctx.arc(x+Math.cos(a*1.256)*4,y+Math.sin(a*1.256)*4,2,0,6.28);ctx.fill()}}}}
-function drawPreviewUnits(){for(const fx of state.summonFx){if(fx.unit){fx.t+=.07;fx.unit.scale=Math.min(1,fx.t*1.6);fx.unit.alpha=Math.min(1,fx.t*2);fx.unit.bounce=Math.sin(Math.min(1,fx.t)*Math.PI)*18}else if(fx.token)fx.t+=.07}state.summonFx=state.summonFx.filter(f=>f.t<1.1);for(const u of state.previewUnits){ctx.save();ctx.globalAlpha=u.alpha;drawChibi(u.x,u.y-u.bounce,u.type,u.side,0,false,0,u.scale,false);ctx.restore()}requestAnimationFrame(()=>{if(state.phase==='draft')drawScene()})}
-function drawTokens(){const tokenTypes={you:{attr:state.you.pendingAttr.length,rare:state.you.rare.length},npc:{attr:state.npc.pendingAttr.length,rare:state.npc.rare.length}};for(const side of ['npc','you']){const y=side==='you'?595:45;if(tokenTypes[side].attr)drawHiddenToken(48,y,'属性',tokenTypes[side].attr,'#ffd25d');if(tokenTypes[side].rare)drawHiddenToken(372,y,'レア',tokenTypes[side].rare,'#cf69ff')}}
+function drawPreviewUnits(){for(const fx of state.summonFx){if(fx.unit){fx.t+=.07;fx.unit.scale=Math.min(1,fx.t*1.6);fx.unit.alpha=Math.min(1,fx.t*2);fx.unit.bounce=Math.sin(Math.min(1,fx.t)*Math.PI)*18}else if(fx.token)fx.t+=.07}state.summonFx=state.summonFx.filter(f=>f.t<1.1);for(const u of state.previewUnits){ctx.save();ctx.globalAlpha=u.alpha;drawChibi(u.x,u.y-u.bounce,u.type,u.side,0,false,0,u.scale*.82,false);ctx.restore()}requestAnimationFrame(()=>{if(state.phase==='draft')drawScene()})}
+function drawTokens(){for(const side of ['npc','you']){const y=side==='you'?595:45;const attrs=state[side].pendingAttr;if(attrs.length){if(side==='you'){const attr=attrs[attrs.length-1];drawKnownAttrToken(48,y,attr,attrs.length)}else drawHiddenToken(48,y,'属性',attrs.length,'#ffd25d')}if(state[side].rare.length)drawHiddenToken(372,y,'レア',state[side].rare.length,'#cf69ff')}}
+function drawKnownAttrToken(x,y,attr,count){ctx.save();ctx.translate(x,y);ctx.fillStyle='#1b2134dd';ctx.strokeStyle='#ffd25d';ctx.lineWidth=2;roundRect(-31,-17,62,34,9);ctx.fill();ctx.stroke();ctx.fillStyle='#fff4bd';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillText(`${ATTRS[attr].icon}${ATTRS[attr].name}属性`,0,-1);ctx.font='bold 10px sans-serif';ctx.fillText(`×${count}`,0,12);ctx.restore()}
 function drawHiddenToken(x,y,label,count,color){ctx.save();ctx.translate(x,y);ctx.fillStyle='#1b2134dd';ctx.strokeStyle=color;ctx.lineWidth=2;roundRect(-28,-17,56,34,9);ctx.fill();ctx.stroke();ctx.fillStyle=color;ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillText(`${label}(?)`,0,-1);ctx.font='bold 10px sans-serif';ctx.fillText(`×${count}`,0,12);ctx.restore()}
-function drawBattleUnits(){for(const p of state.battle.projectiles){ctx.fillStyle=p.side==='you'?'#e9f9ff':'#ffe2e8';ctx.beginPath();ctx.arc(p.x,p.y,4,0,6.28);ctx.fill()}const alive=state.battle.units.filter(u=>u.alive).sort((a,b)=>a.y-b.y);for(const u of alive)drawChibi(u.x,u.y,u.type,u.side,u.attack,u.hit>0,u.walkPhase,1,u.moving);}
+function drawBattleUnits(){for(const p of state.battle.projectiles){ctx.fillStyle=p.side==='you'?'#e9f9ff':'#ffe2e8';ctx.beginPath();ctx.arc(p.x,p.y,4,0,6.28);ctx.fill()}const alive=state.battle.units.filter(u=>u.alive).sort((a,b)=>a.y-b.y);for(const u of alive)drawChibi(u.x,u.y,u.type,u.side,u.attack,u.hit>0,u.walkPhase,.82,u.moving);}
 function drawFx(){if(!state.battle)return;for(const e of state.battle.effects){const q=e.t/.75;if(e.kind==='boom'){ctx.save();ctx.globalAlpha=1-q;ctx.fillStyle='#ffcf47';ctx.beginPath();ctx.arc(e.x,e.y,18+q*65,0,6.28);ctx.fill();ctx.fillStyle='#ff714f';ctx.beginPath();ctx.arc(e.x,e.y,10+q*38,0,6.28);ctx.fill();ctx.restore()}else if(e.kind==='poof'){ctx.save();ctx.globalAlpha=1-q;ctx.fillStyle='#f4f0df';for(let i=0;i<6;i++){ctx.beginPath();ctx.arc(e.x+Math.cos(i)*q*25,e.y+Math.sin(i)*q*18,7*(1-q),0,6.28);ctx.fill()}ctx.restore()}else if(e.kind==='heal'){ctx.save();ctx.globalAlpha=1-q;ctx.fillStyle='#72ff9e';ctx.font='bold 24px sans-serif';ctx.textAlign='center';ctx.fillText('✚',e.x,e.y-q*35);ctx.restore()}}}
 function drawChibi(x,y,type,side,attack,hit,walkPhase,scale=1,moving=false){
- const t=UNITS[type],body=ROLE_COLORS[t.roleKey];
+ const t=UNITS[type],role=ROLE_COLORS[t.roleKey],team=side==='you'?'#2f79df':'#d94b52',teamDark=side==='you'?'#15458f':'#7f232a';
  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
  const dir=side==='you'?-1:1;
  const step=moving?Math.sin(walkPhase)*3:0;
@@ -98,17 +107,33 @@ function drawChibi(x,y,type,side,attack,hit,walkPhase,scale=1,moving=false){
  ctx.strokeStyle='#303746';ctx.lineWidth=5;ctx.lineCap='round';
  ctx.beginPath();ctx.moveTo(-5,8);ctx.lineTo(-6+step,17);ctx.moveTo(5,8);ctx.lineTo(6-step,17);ctx.stroke();
  // body with shaded armor
- const grad=ctx.createLinearGradient(-12,-4,12,12);grad.addColorStop(0,'#ffffff55');grad.addColorStop(.32,body);grad.addColorStop(1,'#00000055');
+ const grad=ctx.createLinearGradient(-12,-4,12,12);grad.addColorStop(0,'#ffffff77');grad.addColorStop(.28,team);grad.addColorStop(.72,teamDark);grad.addColorStop(1,'#111827');
  ctx.fillStyle=grad;ctx.beginPath();ctx.ellipse(0,2,12,14,0,0,6.28);ctx.fill();ctx.strokeStyle='#273044';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#ffffff20';ctx.beginPath();ctx.ellipse(-4,-1,4,8,-.3,0,6.28);ctx.fill();ctx.strokeStyle='#ffffff44';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-8,4);ctx.lineTo(8,4);ctx.stroke();
  // head
  const skin=ctx.createRadialGradient(-4,-18,2,0,-12,14);skin.addColorStop(0,'#ffe5cc');skin.addColorStop(.7,'#ffd0a8');skin.addColorStop(1,'#bf7c58');
  ctx.fillStyle=skin;ctx.beginPath();ctx.arc(0,-13,11,0,6.28);ctx.fill();ctx.strokeStyle='#47352f';ctx.lineWidth=1.5;ctx.stroke();
+ // team-color scarf and role trim
+ ctx.fillStyle=team;ctx.fillRect(-10,-5,20,4);ctx.fillStyle=role;ctx.fillRect(-9,5,18,3);
+ drawHeadgear(type,team,teamDark,role);
  // face always upright, look toward center
  ctx.fillStyle='#202330';ctx.beginPath();ctx.arc(-3,-14,1.4,0,6.28);ctx.arc(3,-14,1.4,0,6.28);ctx.fill();
  // arms + attack lunge
  const lunge=attack?Math.sin((.22-attack)/.22*Math.PI)*6:0;
  ctx.save();ctx.translate(0,dir*lunge);drawEquipment(type,dir,step);ctx.restore();
  ctx.restore();
+ function drawHeadgear(k,team,teamDark,role){
+  ctx.save();
+  if(k==='shield'){ctx.fillStyle=teamDark;ctx.beginPath();ctx.arc(0,-17,12,Math.PI,0);ctx.lineTo(12,-10);ctx.lineTo(-12,-10);ctx.closePath();ctx.fill();ctx.fillStyle=role;ctx.fillRect(-2,-29,4,12)}
+  else if(k==='golem'){ctx.fillStyle='#59685e';ctx.beginPath();ctx.moveTo(-12,-18);ctx.lineTo(-7,-28);ctx.lineTo(0,-22);ctx.lineTo(7,-29);ctx.lineTo(12,-18);ctx.closePath();ctx.fill()}
+  else if(k==='knight'){ctx.fillStyle='#d9e3ea';ctx.beginPath();ctx.arc(0,-16,12,Math.PI,0);ctx.lineTo(12,-9);ctx.lineTo(-12,-9);ctx.closePath();ctx.fill();ctx.fillStyle=team;ctx.fillRect(-2,-31,4,13)}
+  else if(k==='wolf'){ctx.fillStyle='#4d5661';ctx.beginPath();ctx.moveTo(-10,-18);ctx.lineTo(-7,-31);ctx.lineTo(-1,-20);ctx.moveTo(10,-18);ctx.lineTo(7,-31);ctx.lineTo(1,-20);ctx.fill()}
+  else if(k==='assassin'){ctx.fillStyle=teamDark;ctx.beginPath();ctx.moveTo(0,-31);ctx.lineTo(15,-8);ctx.lineTo(-15,-8);ctx.closePath();ctx.fill();ctx.fillStyle='#111';ctx.fillRect(-9,-16,18,4)}
+  else if(k==='archer'){ctx.fillStyle=team;ctx.beginPath();ctx.arc(0,-18,12,Math.PI,0);ctx.lineTo(10,-8);ctx.lineTo(-10,-8);ctx.closePath();ctx.fill();ctx.fillStyle='#6f4727';ctx.fillRect(7,-28,3,15)}
+  else if(k==='ranger'){ctx.fillStyle='#3d6c42';ctx.beginPath();ctx.moveTo(0,-32);ctx.lineTo(14,-9);ctx.lineTo(-14,-9);ctx.closePath();ctx.fill();ctx.fillStyle=team;ctx.fillRect(-9,-12,18,4)}
+  else if(k==='priest'){ctx.fillStyle='#f3f0dc';ctx.beginPath();ctx.arc(0,-17,12,Math.PI,0);ctx.lineTo(11,-9);ctx.lineTo(-11,-9);ctx.closePath();ctx.fill();ctx.fillStyle=team;ctx.fillRect(-10,-12,20,4)}
+  else if(k==='bomber'){ctx.fillStyle=teamDark;ctx.beginPath();ctx.arc(0,-18,12,Math.PI,0);ctx.lineTo(12,-9);ctx.lineTo(-12,-9);ctx.closePath();ctx.fill();ctx.fillStyle='#f7c843';ctx.fillRect(-9,-22,18,4)}
+  ctx.restore();
+ }
  function drawEquipment(k,dir,step){
   ctx.lineWidth=3;ctx.lineCap='round';ctx.strokeStyle='#252b37';
   if(k==='shield'){
@@ -132,7 +157,9 @@ function drawChibi(x,y,type,side,attack,hit,walkPhase,scale=1,moving=false){
   }
  }
 }
-function cardArtSvg(c){if(c.type==='attr')return mysterySvg('#e4b84c','属性');if(c.type==='rare')return mysterySvg('#b75dff','レア');if(c.type==='buff'){const em={heart:'♥',sword:'⚔',speed:'➤',bomb:'●'}[c.art]||'✦';return `<svg viewBox="0 0 120 120"><defs><radialGradient id="g"><stop stop-color="#ffffff55"/><stop offset="1" stop-color="#ffffff00"/></radialGradient></defs><circle cx="60" cy="60" r="48" fill="url(#g)"/><text x="60" y="80" text-anchor="middle" font-size="64" fill="#fff">${em}</text></svg>`}return unitSvg(c.unit)}
+function cardArtSvg(c){if(c.type==='attr')return attributeSvg(c.attr);if(c.type==='rare')return mysterySvg('#b75dff','レア');if(c.type==='buff'){const em={heart:'♥',sword:'⚔',speed:'➤',bomb:'●'}[c.art]||'✦';return `<svg viewBox="0 0 120 120"><defs><radialGradient id="g"><stop stop-color="#ffffff55"/><stop offset="1" stop-color="#ffffff00"/></radialGradient></defs><circle cx="60" cy="60" r="48" fill="url(#g)"/><text x="60" y="80" text-anchor="middle" font-size="64" fill="#fff">${em}</text></svg>`}return unitSvg(c.unit)}
+
+function attributeSvg(attr){const a=ATTRS[attr];const colors={none:'#b8c0cc',fire:'#ff6b4a',wood:'#53b96b',earth:'#a98256',lightning:'#ffd54a',water:'#4aa7ff'};const color=colors[attr]||'#ffd25d';return `<svg viewBox="0 0 120 120"><defs><radialGradient id="ag"><stop stop-color="#ffffff99"/><stop offset="1" stop-color="${color}22"/></radialGradient></defs><circle cx="60" cy="60" r="48" fill="url(#ag)" stroke="${color}" stroke-width="5"/><text x="60" y="76" text-anchor="middle" font-size="48">${a.icon}</text><text x="60" y="105" text-anchor="middle" font-size="13" font-weight="900" fill="#fff">${a.name}属性</text></svg>`}
 function mysterySvg(color,label){return `<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="47" fill="${color}33" stroke="${color}" stroke-width="4"/><path d="M42 35h36v50H42z" rx="8" fill="#1b2136" stroke="${color}" stroke-width="3"/><text x="60" y="73" text-anchor="middle" font-size="47" font-weight="900" fill="${color}">?</text><text x="60" y="105" text-anchor="middle" font-size="12" fill="#fff">${label}</text></svg>`}
 function unitSvg(id){const t=UNITS[id],color=ROLE_COLORS[t.roleKey];return `<svg viewBox="0 0 120 120"><ellipse cx="60" cy="100" rx="30" ry="9" fill="#0004"/><circle cx="60" cy="49" r="25" fill="#ffd3ae"/><ellipse cx="60" cy="82" rx="23" ry="26" fill="${color}" stroke="#243047" stroke-width="3"/><path d="M45 76h30M60 61v41" stroke="#ffffff44" stroke-width="2"/><circle cx="51" cy="47" r="3" fill="#292936"/><circle cx="69" cy="47" r="3" fill="#292936"/>${svgEquip(id)}</svg>`}
 function svgEquip(id){if(id==='shield')return `<rect x="25" y="63" width="27" height="43" rx="8" fill="#6389c9" stroke="#dbe9ff" stroke-width="4"/><path d="M77 62l18 36" stroke="#f4d06f" stroke-width="6"/>`;if(id==='golem')return `<circle cx="60" cy="48" r="29" fill="#7c897e"/><rect x="24" y="70" width="18" height="37" rx="8" fill="#68736a"/><rect x="78" y="70" width="18" height="37" rx="8" fill="#68736a"/>`;if(id==='knight')return `<path d="M39 45a21 21 0 0142 0v7H39z" fill="#dbe6ef"/><path d="M78 61l17 38" stroke="#f5d36f" stroke-width="7"/>`;if(id==='wolf')return `<path d="M41 34l7-21 12 20M79 34l-7-21-12 20" fill="#59616c"/><ellipse cx="60" cy="83" rx="36" ry="20" fill="#59616c"/>`;if(id==='assassin')return `<path d="M60 18L91 62H29z" fill="#332542"/><path d="M29 97l62-39" stroke="#f6f7ff" stroke-width="6"/>`;if(id==='archer')return `<path d="M89 57c18 14 18 38 0 52" fill="none" stroke="#704c27" stroke-width="6"/><path d="M89 57v52" stroke="#704c27" stroke-width="3"/>`;if(id==='ranger')return `<path d="M60 17L87 59H33z" fill="#4f7650"/><path d="M89 62c15 13 15 33 0 46" fill="none" stroke="#9b6b37" stroke-width="6"/>`;if(id==='priest')return `<path d="M89 58v48M77 71h24" stroke="#ff7aac" stroke-width="7"/>`;if(id==='bomber')return `<circle cx="89" cy="83" r="21" fill="#202632"/><path d="M93 62q16-24 20 1" fill="none" stroke="#ffbd3d" stroke-width="5"/>`;return ''}
