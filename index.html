@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>Project Arena v0.5</title>
+  <title>Project Arena v0.6</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main class="app">
     <header class="topbar">
-      <div><h1>PROJECT ARENA</h1><p>v0.5</p></div>
+      <div><h1>PROJECT ARENA</h1><p>v0.6</p></div>
       <button id="restartBtn" class="ghost">最初から</button>
     </header>
 
@@ -23,17 +23,18 @@
       <div class="canvas-shell">
         <canvas id="battleCanvas" width="420" height="640"></canvas>
         <div id="centerBanner" class="center-banner hidden"></div>
-      </div>
 
-      <section id="draftPanel" class="draft-panel">
-        <div class="draft-head">
-          <div><h2 id="draftTitle">カード選択 1/3</h2><p id="draftHelp">選ぶと戦場へ召喚されます</p></div>
-          <div class="timer" id="timer">30</div>
-        </div>
-        <div id="pickProgress" class="progress"></div>
-        <div id="cards" class="cards"></div>
-        <button id="rerollBtn" class="reroll">↻ 引き直し</button>
-      </section>
+        <section id="draftPanel" class="draft-modal">
+          <div class="draft-card-shell">
+            <div class="draft-head">
+              <div><h2 id="draftTitle">カード選択 1/3</h2><p id="draftHelp">選ぶと戦場へ召喚されます</p></div>
+              <div id="timerRing" class="timer-ring"><div class="timer-inner"><span id="timer">30</span></div></div>
+            </div>
+            <div id="cards" class="cards"></div>
+            <button id="rerollBtn" class="reroll">↻ 引き直し</button>
+          </div>
+        </section>
+      </div>
 
       <section id="resultPanel" class="result-panel hidden">
         <h2 id="resultText"></h2>
