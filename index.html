@@ -1,1 +1,55 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Project Arena v0.4</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div><h1>PROJECT ARENA</h1><p>v0.4</p></div>
+      <button id="restartBtn" class="ghost">最初から</button>
+    </header>
 
+    <section class="hud">
+      <article class="hud-player npc"><span>NPC</span><strong id="npcLife">♥♥♥♥♥</strong><small>属性 <b id="npcAttr">？？？</b></small></article>
+      <div class="round"><small>ROUND</small><strong id="roundNo">1</strong><span id="phase">ドラフト</span></div>
+      <article class="hud-player you"><span>YOU</span><strong id="youLife">♥♥♥♥♥</strong><small>属性 <b id="youAttr">？？？</b></small></article>
+    </section>
+
+    <section id="draftView" class="panel">
+      <div class="draft-head">
+        <div><h2 id="draftTitle">カードを選択</h2><p id="draftHelp">3択から1枚を選択</p></div>
+        <div class="timer" id="timer">30</div>
+      </div>
+      <div id="pickProgress" class="progress"></div>
+      <div id="cards" class="cards"></div>
+      <button id="rerollBtn" class="reroll">↻ 引き直し</button>
+    </section>
+
+    <section id="battleView" class="panel hidden">
+      <div class="battle-top">
+        <h2>オートバトル</h2>
+        <div id="attributeReveal" class="reveal">属性公開待ち</div>
+      </div>
+      <div class="canvas-shell"><canvas id="battleCanvas" width="420" height="700"></canvas></div>
+      <div class="battle-footer">
+        <pre id="battleLog"></pre>
+        <button id="nextRoundBtn" class="primary hidden">次のラウンド</button>
+      </div>
+    </section>
+
+    <section id="gameOverView" class="panel gameover hidden">
+      <h2 id="gameOverText"></h2>
+      <button id="againBtn" class="primary">もう一度</button>
+    </section>
+
+    <div id="rareOverlay" class="rare-overlay hidden">
+      <div class="rare-card"><div class="seal">?</div><h2>封印カード開封</h2><p id="rareResult"></p></div>
+    </div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
