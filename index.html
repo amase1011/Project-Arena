@@ -3,48 +3,121 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>Project Arena v0.6</title>
+  <title>Project Arena v0.95</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="app">
+  <section id="homeView" class="home-screen">
+    <div class="home-card">
+      <p class="home-kicker">DRAFT × AUTO BATTLE</p>
+      <h1>PROJECT<br><span>ARENA</span></h1>
+      <p class="home-version">VERSION 0.95</p>
+      <div class="home-rule">NPC難易度を選択</div>
+
+      <div class="difficulty-list" role="group" aria-label="NPC難易度">
+        <button class="difficulty-button easy" data-difficulty="easy">
+          <span class="difficulty-rank">EASY</span>
+          <strong>初級</strong>
+          <small>ランダム性が高く、属性対策は控えめ</small>
+        </button>
+        <button class="difficulty-button normal" data-difficulty="normal">
+          <span class="difficulty-rank">NORMAL</span>
+          <strong>中級</strong>
+          <small>編成バランスと前ラウンドの属性を判断</small>
+        </button>
+        <button class="difficulty-button hard" data-difficulty="hard">
+          <span class="difficulty-rank">HARD</span>
+          <strong>上級</strong>
+          <small>属性・増援・編成を総合的に判断</small>
+        </button>
+      </div>
+
+      <button id="settingsBtn" class="settings-open" type="button">⚙ ゲーム設定</button>
+      <section id="settingsPanel" class="settings-panel hidden" aria-label="ゲーム設定">
+        <div class="settings-heading">
+          <div><span>GAME SETTINGS</span><strong>ゲーム設定</strong></div>
+          <button id="closeSettingsBtn" class="settings-close" type="button" aria-label="設定を閉じる">×</button>
+        </div>
+        <label class="setting-row" for="affinityToggle">
+          <span class="setting-copy">
+            <strong>ドラフト中の属性相性表示</strong>
+            <small>画面上部に有利関係をコンパクト表示</small>
+          </span>
+          <input id="affinityToggle" type="checkbox" />
+          <span class="toggle-switch" aria-hidden="true"></span>
+        </label>
+      </section>
+
+      <p class="home-note">上級でも、現在のドラフトで選んだ伏せ属性は参照しません。</p>
+    </div>
+  </section>
+
+  <main id="gameView" class="app hidden">
     <header class="topbar">
-      <div><h1>PROJECT ARENA</h1><p>v0.6</p></div>
-      <button id="restartBtn" class="ghost">最初から</button>
+      <div class="brand-lockup">
+        <h1>PROJECT ARENA</h1>
+        <p>V0.95 <span>•</span> NPC <b id="difficultyLabel">中級</b></p>
+      </div>
+      <button id="restartBtn" class="ghost home-shortcut" type="button">⌂ HOME</button>
     </header>
 
-    <section class="hud">
-      <article class="hud-player npc"><span>NPC</span><strong id="npcLife">♥♥♥♥♥</strong><small>属性 <b id="npcAttr">？？？</b></small></article>
-      <div class="round"><small>ROUND</small><strong id="roundNo">1</strong><span id="phase">ドラフト</span></div>
-      <article class="hud-player you"><span>YOU</span><strong id="youLife">♥♥♥♥♥</strong><small>属性 <b id="youAttr">？？？</b></small></article>
+    <section id="affinityGuide" class="affinity-guide hidden" aria-label="属性相性。左の属性が右の属性に有利">
+      <strong>属性有利</strong>
+      <span>🔥</span><i>›</i><span>🌳</span><i>›</i><span>🪨</span><i>›</i><span>⚡</span><i>›</i><span>💧</span><i>›</i><span>🔥</span>
     </section>
 
     <section class="game-panel">
       <div class="canvas-shell">
         <canvas id="battleCanvas" width="420" height="640"></canvas>
+
+        <section class="battle-hud npc-hud">
+          <div class="identity"><span>NPC</span><strong id="npcLife">♥♥♥♥♥</strong></div>
+          <div class="attribute"><span>ATTRIBUTE</span><b id="npcAttr">？？？</b></div>
+        </section>
+        <section class="battle-hud you-hud">
+          <div class="identity"><span>YOU</span><strong id="youLife">♥♥♥♥♥</strong></div>
+          <div class="attribute"><span>ATTRIBUTE</span><b id="youAttr">？？？</b></div>
+        </section>
+        <div id="phase" class="phase-chip">DRAFT</div>
         <div id="centerBanner" class="center-banner hidden"></div>
 
         <section id="draftPanel" class="draft-modal">
           <div class="draft-card-shell">
             <div class="draft-head">
-              <div><h2 id="draftTitle">カード選択 1/3</h2><p id="draftHelp">選ぶと戦場へ召喚されます</p></div>
-              <div id="timerRing" class="timer-ring"><div class="timer-inner"><span id="timer">30</span></div></div>
+              <div class="draft-heading-copy">
+                <span class="draft-eyebrow">SELECT YOUR CARD</span>
+                <h2 id="draftTitle">カード選択 1/3</h2>
+                <p id="draftHelp">選ぶと戦場へ反映されます</p>
+              </div>
+              <div class="timer-wrap" aria-label="残り時間">
+                <svg class="timer-svg" viewBox="0 0 60 60" aria-hidden="true">
+                  <circle class="timer-track" cx="30" cy="30" r="24"></circle>
+                  <circle id="timerProgress" class="timer-progress" cx="30" cy="30" r="24"></circle>
+                </svg>
+                <span id="timer">30</span>
+              </div>
             </div>
             <div id="cards" class="cards"></div>
-            <button id="rerollBtn" class="reroll">↻ 引き直し</button>
+            <button id="rerollBtn" class="reroll" type="button">↻ カードを引き直す</button>
           </div>
         </section>
-      </div>
 
-      <section id="resultPanel" class="result-panel hidden">
-        <h2 id="resultText"></h2>
-        <button id="nextRoundBtn" class="primary">次のラウンド</button>
-      </section>
+        <section id="resultPanel" class="round-result hidden">
+          <div class="result-side npc-result"><span>NPC LIFE</span><strong id="resultNpcLife"></strong></div>
+          <div id="resultText" class="result-title"></div>
+          <div class="result-side you-result"><span>YOU LIFE</span><strong id="resultYouLife"></strong></div>
+        </section>
+      </div>
     </section>
 
     <section id="gameOverView" class="gameover hidden">
+      <span class="gameover-kicker">BATTLE FINISHED</span>
       <h2 id="gameOverText"></h2>
-      <button id="againBtn" class="primary">もう一度</button>
+      <p id="gameOverDifficulty"></p>
+      <div class="gameover-actions">
+        <button id="againBtn" class="primary" type="button">同じ難易度でもう一度</button>
+        <button id="homeBtn" class="ghost" type="button">ホームへ戻る</button>
+      </div>
     </section>
 
     <div id="revealOverlay" class="reveal-overlay hidden">
